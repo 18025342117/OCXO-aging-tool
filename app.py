@@ -35,7 +35,7 @@ if uploaded_files:
     analysis_results = []
 
     for idx, file in enumerate(uploaded_files):
-            try:
+        try:
             # 读取数据
             df = pd.read_excel(file, header=None)
             t_days = pd.to_numeric(df.iloc[:, 0], errors='coerce').dropna().values
