@@ -68,18 +68,18 @@ if uploaded_files:
                 "yearly": year_aging
             })
 
-            # 绘制当前文件的散点与曲线，并在同一个 ax (坐标系) 上叠加
-            ax.scatter(t_days, y_freq, s=3, alpha=0.4, color=color_raw[idx], label=f"{file.name} (实测)")
+           # 绘制当前文件的散点与曲线 (全英文标签)
+            ax.scatter(t_days, y_freq, s=3, alpha=0.4, color=color_raw[idx], label=f"{file.name} (Raw Data)")
             t_smooth = np.linspace(0, max(T1, 30), 1000)
-            ax.plot(t_smooth, log_aging_model(t_smooth, A, B, C), color=color_fit[idx], linewidth=2, label=f"{file.name} (WLS外推)")
+            ax.plot(t_smooth, log_aging_model(t_smooth, A, B, C), color=color_fit[idx], linewidth=2, label=f"{file.name} (WLS Fit)")
 
         except Exception as e:
-            st.error(f"处理文件 {file.name} 时出错: {str(e)}")
+            st.error(f"Error processing {file.name}: {str(e)}")
 
-    # 图表细节修饰
-    ax.set_xlabel("测试时间 Time (Days)", fontsize=12)
-    ax.set_ylabel("相对频率偏差 \Deltaf/f", fontsize=12)
-    ax.set_title("OCXO 老化趋势对比图", fontsize=14, fontweight='bold')
+    # 图表细节修饰 (全英文)
+    ax.set_xlabel("Time (Days)", fontsize=12)
+    ax.set_ylabel("Relative Frequency Deviation (df/f)", fontsize=12)
+    ax.set_title("OCXO Frequency Aging Trend Comparison", fontsize=14, fontweight='bold')
     ax.grid(True, linestyle='--', alpha=0.6)
     ax.legend(loc='upper left', fontsize=10)
     
