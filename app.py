@@ -36,6 +36,7 @@ if uploaded_files:
 
     for idx, file in enumerate(uploaded_files):
         try:
+            try:
             # 读取数据
             df = pd.read_excel(file, header=None)
             t_days = pd.to_numeric(df.iloc[:, 0], errors='coerce').dropna().values
@@ -44,9 +45,25 @@ if uploaded_files:
             min_len = min(len(t_days), len(y_freq))
             t_days, y_freq = t_days[:min_len], y_freq[:min_len]
 
+            # === 新增：自动剔除前 48 小时 (2天) 预热数据 ===
+            t_zero = t_days[0] # 获取上电瞬间的初始时间戳
+            valid_mask = t_days >= (t_zero + 2.0) # 筛选出大于等于2天的数据
+            
+            t_days = t_days[valid_mask]
+            y_freq = y_freq[valid_mask]
+            
+            if len(t_days) == 0:
+                st.error(f"文件 {file.name} 的总测试时长不足 48 小时，剔除后无有效数据！")
+                continue # 跳过该文件，继续处理下一个
+
+            # 将剩余有效数据的起点强制平移回 0 
+            # (这是对数模型 f(t) = A*ln(B*t+1)+C 在数学上必须的要求)
+            t_days = t_days - t_days[0] 
+            # =========================================================
+
             # 时间加权最小二乘法拟合
             weights = t_days + 1.0
-            popt, _ = curve_fit(log_aging_model, t_days, y_freq, 
+            popt, _ = curve_fit(log_aging_model, t_days, y_freq,
                                 p0=[1e-9, 1.0, 1e-8], 
                                 bounds=([-np.inf, 1e-10, -np.inf], [np.inf, np.inf, np.inf]),
                                 sigma=1.0/weights)
